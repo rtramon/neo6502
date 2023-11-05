@@ -41,7 +41,8 @@ inline __attribute__((always_inline)) uint8_t getData() {
   // output enable  for data0-data7 first
   gpio_clr_mask(D0_7_OE);            // enable d0-d7 latch
   gpio_set_mask(A0_7_OE | A8_15_OE); // disable latch a0-a7 and a8-a15
-  asm volatile("nop\nnop\nnop\n");
+  // asm volatile("nop\nnop\nnop\n");
+  asm volatile("dmb\n");
   uint8_t data = gpio_get_all() & BUS_MASK;
 
   return data;
@@ -53,7 +54,7 @@ inline __attribute__((always_inline)) void putData(uint8_t data) {
 
   // set databus direction to output
   gpio_set_dir_masked(BUS_MASK, BUS_MASK);
-  asm volatile("nop\n");
+  // asm volatile("nop\n");
   gpio_put_masked(BUS_MASK, (uint32_t)data);
 }
 
@@ -143,7 +144,7 @@ inline __attribute__((always_inline)) void tick6502() {
   uint16_t address = allbits & BUS_MASK;
   bool rw = allbits & (1ul << GP_RW);
 
-  asm volatile("nop\nnop\n");
+  asm volatile("nop\n");
 
   address |= (gpio_get_all() & BUS_MASK) << 8;
 
@@ -151,31 +152,31 @@ inline __attribute__((always_inline)) void tick6502() {
   if (rw) {
     // RW_READ:
     switch (address) {
-    case 0x0600:
-      printf("Start, ");
-      data = mem[address];
+      // case 0x0600:
+      //   printf("Start, ");
+      //   data = mem[address];
 
-      break;
+      //   break;
 
-    case 0x061F:
-      puts("OK");
-      data = mem[address];
+      // case 0x061F:
+      //   puts("OK");
+      //   data = mem[address];
 
-      break;
+      //   break;
 
-    case 0x0624:
-      puts("FAIL");
-      data = mem[address];
+      // case 0x0624:
+      //   puts("FAIL");
+      //   data = mem[address];
 
-      break;
+      //   break;
 
     case DSP:
-      if (regDSPCR & 0x02) {
-        data = regDSP;
-        regDSPCR &= 0x7F;
-      } else {
-        data = regDSPDIR;
-      }
+      // if (regDSPCR & 0x02) {
+      data = regDSP;
+      // regDSPCR &= 0x7F;
+      // } else {
+      // data = regDSPDIR;
+      // }
       break;
 
     case DSPCR:
@@ -198,10 +199,10 @@ inline __attribute__((always_inline)) void tick6502() {
 
     switch (address) {
     case DSP:
-      if (regDSPCR & 0x02)
-        putchar(data);
-      else
-        regDSPDIR = data;
+      // if (regDSPCR & 0x02)
+      putchar(data);
+      // else
+      // regDSPDIR = data;
       break;
 
     case DSPCR:
