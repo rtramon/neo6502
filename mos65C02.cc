@@ -43,7 +43,7 @@ inline __attribute__((always_inline)) uint8_t getData() {
   gpio_set_mask(A0_7_OE | A8_15_OE); // disable latch a0-a7 and a8-a15
   // asm volatile("nop\nnop\nnop\n");
   asm volatile("dmb\n");
-  uint8_t data = gpio_get_all() & BUS_MASK;
+  uint32_t data = gpio_get_all();
 
   return data;
 }
@@ -120,56 +120,45 @@ void reset6502() {
 inline __attribute__((always_inline)) void tick6502() {
   uint8_t data;
 
-  ClockLow();
+  // ClockLow();
 
   // read A0-7
   // set output enable of required latch first, to use
   // clocks for usefull work
-  gpio_clr_mask(A0_7_OE);            // enable a0-a7 latch
-  gpio_set_mask(D0_7_OE | A8_15_OE); // disable latch d0-d7 and a8-a15
+  gpio_set_mask(D0_7_OE | A8_15_OE);   // disable latch d0-d7 and a8-a15
+  gpio_clr_mask(A0_7_OE | CLOCK_MASK); // enable a0-a7 latch
   // set databus gpios as inputs
   gpio_set_dir_masked(BUS_MASK, 0);
-  ClockHigh();
+  // ClockHigh();
 
-  asm volatile("nop\nnop\n");
+  asm volatile("nop\n nop\n nop\n");
+  // asm volatile("dmb\n");
 
   // read A0 - A7
   uint32_t allbits = gpio_get_all();
 
   // prepare to read A8-15
-  gpio_clr_mask(A8_15_OE);          // enable a8-a15 latch
-  gpio_set_mask(D0_7_OE | A0_7_OE); // disable latch d0-d7 and a0-a7
+  // disable latch d0-d7 and a0-a7 and set clock high
+  gpio_set_mask(D0_7_OE | A0_7_OE | CLOCK_MASK);
+  gpio_clr_mask(A8_15_OE); // enable a8-a15 latch
 
   // do a0-a7 reading now to reduce nop's
   uint16_t address = allbits & BUS_MASK;
   bool rw = allbits & (1ul << GP_RW);
 
-  asm volatile("nop\n");
+  // asm volatile("nop\n");
+  gpio_clr_mask(D0_7_OE); // enable d0-d7 latch
 
   address |= (gpio_get_all() & BUS_MASK) << 8;
+
+  // setup latches for databus operation
+  // gpio_clr_mask(D0_7_OE);            // enable d0-d7 latch
+  gpio_set_mask(A0_7_OE | A8_15_OE); // disable latch a0-a7 and a8-a15
 
   // do RW action
   if (rw) {
     // RW_READ:
     switch (address) {
-      // case 0x0600:
-      //   printf("Start, ");
-      //   data = mem[address];
-
-      //   break;
-
-      // case 0x061F:
-      //   puts("OK");
-      //   data = mem[address];
-
-      //   break;
-
-      // case 0x0624:
-      //   puts("FAIL");
-      //   data = mem[address];
-
-      //   break;
-
     case DSP:
       // if (regDSPCR & 0x02) {
       data = regDSP;
@@ -188,14 +177,20 @@ inline __attribute__((always_inline)) void tick6502() {
       break;
     }
 
-    putData(data);
+    // putData(data);
+
+    // set databus direction to output
+    gpio_set_dir_masked(BUS_MASK, BUS_MASK);
+    gpio_put_masked(BUS_MASK, (uint32_t)data);
 
     // printf("R %04X %02X\n", address, data);
   }
 
   else {
     // RW_WRITE:
-    data = getData();
+    // data = getData();
+    // asm volatile("nop\n");
+    uint32_t data = gpio_get_all();
 
     switch (address) {
     case DSP:

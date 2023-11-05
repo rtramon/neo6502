@@ -15,8 +15,8 @@ pico_enable_stdio_usb(test 1)
 pico_add_extra_outputs(test)
 target_link_libraries(test pico_stdlib)
 
-add_compile_options(-Wall
- -O2
- )
+# add_compile_options(-Wall
+#  -O2
+#  )
 
-pico_set_binary_type(test copy_to_ram)
+# pico_set_binary_type(test copy_to_ram)

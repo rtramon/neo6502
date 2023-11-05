@@ -25,6 +25,7 @@ constexpr uint32_t en_D0_7 = 0b00000000000001100000000;
 constexpr uint32_t A0_7_OE = 1ul << 8;  // gpio for a0-7 output enable
 constexpr uint32_t A8_15_OE = 1ul << 9; // gpio for a8-15 output enable
 constexpr uint32_t D0_7_OE = 1ul << 10; // gpio for D0-7 output enable
+constexpr uint32_t CLOCK_MASK = 1ul << GP_CLOCK;
 
 #define RESET_LOW false
 #define RESET_HIGH true

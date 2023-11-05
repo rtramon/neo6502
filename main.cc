@@ -9,7 +9,7 @@
 int main() {
 
   bi_decl(bi_program_description("NEO6502 System Emulator v0.01"));
-  set_sys_clock_khz(255000, true);
+  set_sys_clock_khz(250000, true);
   // set_sys_clock_khz(300000,
   // true); // higher then 255Mhz only works using copy_to_ram
 
