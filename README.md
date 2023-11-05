@@ -1,1 +1,4 @@
-# neo6502
+Neo6502 
+
+Memory & peripheral emulator
+
