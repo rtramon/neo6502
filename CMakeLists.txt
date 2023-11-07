@@ -9,11 +9,13 @@ add_executable(test
   mos65C02.cc
   m6821.cc
   rom.cc
+  ewoz.cc
+  core1_main.cc
 )
 pico_enable_stdio_usb(test 1)
 # pico_enable_stdio_uart(test 1)
 pico_add_extra_outputs(test)
-target_link_libraries(test pico_stdlib)
+target_link_libraries(test pico_stdlib pico_multicore)
 
 # add_compile_options(-Wall
 #  -O2

@@ -1,3 +1,4 @@
+#include "ewoz.h"
 #include <stdint.h>
 
 // hex of bit.s
@@ -58,7 +59,14 @@ void load_rom() {
   for (int i = 0; i < sizeof(mem_test); i++)
     mem[0x0600 + i] = mem_test[i];
 
+  for (int i = 0; i < EWOZ_SIZE; i++)
+    mem[EWOZ_START + i] = ewoz_bin[i];
+
   // setup reset vector
-  mem[0xFFFC] = 0;
-  mem[0xFFFD] = 0x06;
+  mem[0xFFFC] = 0x20;
+  mem[0xFFFD] = 0xFC;
+
+  // setup irq/brk
+  mem[0xFFFE] = 0x50;
+  mem[0xFFFF] = 0xFE;
 }

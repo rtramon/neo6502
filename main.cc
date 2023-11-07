@@ -1,10 +1,14 @@
 #include "hardware/gpio.h"
 #include "hardware/vreg.h"
 #include "pico/binary_info.h"
+#include "pico/multicore.h"
 #include "pico/stdlib.h"
 #include <stdio.h>
 
 #include "mos65C02.h"
+
+// external functions
+void core1_main();
 
 int main() {
 
@@ -15,6 +19,10 @@ int main() {
 
   stdio_init_all();
   sleep_ms(2000); // wait for USB to finish setup
+
+  // start service core
+  multicore_launch_core1(core1_main);
+
   puts("\nNEO6502 Memory Emulator v0.01");
 
   init6502();

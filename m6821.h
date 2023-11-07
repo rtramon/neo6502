@@ -24,6 +24,8 @@ extern uint8_t regDSP;
 extern uint8_t regDSPDIR; // Dir register when DSPCR.bit2 == 0
 extern uint8_t regDSPCR;
 
+extern uint8_t flagDSP; // indicates that regDSPhas been updated
+
 void init6821();
 
 #endif

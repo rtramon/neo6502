@@ -9,8 +9,10 @@
 #define GP_RESET 26 // RESB(40) <-- UEXT pin 3
 #define GP_CLOCK 21 // PHI2
 #define GP_RW 11    // RW#
-
 #define GP_BUZZ 20
+#define GP_U5_OE 8
+#define GP_U6_OE 9
+#define GP_U7_OE 10
 
 // mux bus enable pins
 //                                2         1         0
@@ -26,6 +28,16 @@ constexpr uint32_t A0_7_OE = 1ul << 8;  // gpio for a0-7 output enable
 constexpr uint32_t A8_15_OE = 1ul << 9; // gpio for a8-15 output enable
 constexpr uint32_t D0_7_OE = 1ul << 10; // gpio for D0-7 output enable
 constexpr uint32_t CLOCK_MASK = 1ul << GP_CLOCK;
+
+// GPIO direction DATA in
+constexpr uint32_t GPIO_DIR_DATA_IN_MASK =
+    (1ul << GP_RESET) | (1ul << GP_CLOCK) | (1ul << GP_U5_OE) |
+    (1ul << GP_U6_OE) | (1ul << GP_U7_OE);
+
+// GPIO direction DATA out
+constexpr uint32_t GPIO_DIR_DATA_OUT_MASK =
+    (1ul << GP_RESET) | (1ul << GP_CLOCK) | (1ul << GP_U5_OE) |
+    (1ul << GP_U6_OE) | (1ul << GP_U7_OE) | 0xFF;
 
 #define RESET_LOW false
 #define RESET_HIGH true

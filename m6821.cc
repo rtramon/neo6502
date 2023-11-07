@@ -10,6 +10,7 @@ uint8_t regKBDCR;
 uint8_t regDSP;
 uint8_t regDSPDIR; // Dir register when DSPCR.bit2 == 0
 uint8_t regDSPCR;
+uint8_t flagDSP;
 
 /// <summary>
 ///
@@ -21,4 +22,6 @@ void init6821() {
   regDSP = 0x00;
   regDSPDIR = 0x00;
   regDSPCR = 0x00;
+
+  flagDSP = 0;
 }
