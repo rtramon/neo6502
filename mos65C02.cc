@@ -18,6 +18,7 @@
 
 //  64k RAM
 uint8_t mem[MEMORY_SIZE];
+uint32_t ticks;
 
 // mask used for the mux address/data bus: GP0-7
 constexpr uint32_t BUS_MASK = 0xFF;
@@ -58,18 +59,20 @@ void init6502() {
                 A8_15_OE); // disable latch d0-7 and a0-a7 and a8-a15
 
   // speed up gpio input by disabling input hysteresis on databus gpios
-  for (int i = 0; i < 8; i++)
-    gpio_set_input_hysteresis_enabled(i, false);
+  // for (int i = 0; i < 8; i++)
+  // gpio_set_input_hysteresis_enabled(i, false);
 
   // ADDRESS
   // DATA
   gpio_init_mask(BUS_MASK);
   // initialize databus for input
-  gpio_set_dir_masked(BUS_MASK, 0);
+  gpio_set_dir_in_masked(BUS_MASK);
 
   // populate memory
   for (int i = 0; i < sizeof(mem); i++)
     mem[i] = 0xEA;
+
+  ticks = 0;
 
   load_rom();
   init6821();
@@ -107,8 +110,8 @@ inline __attribute__((always_inline)) void tick6502() {
   // set databus gpios as inputs
   gpio_set_dir_in_masked(BUS_MASK);
 
-  asm volatile("nop\n nop\n nop\n");
-  // asm volatile("isb\n");
+  // increment tick counter here, avoiding useless nop's
+  ticks++;
 
   // read A8 - A15
   uint32_t allbits = gpio_get_all();
@@ -123,17 +126,16 @@ inline __attribute__((always_inline)) void tick6502() {
   bool rw = allbits & (1ul << GP_RW);
 
   gpio_clr_mask(D0_7_OE); // enable d0-d7 latch
-  // asm volatile("nop\n");
 
   address |= (gpio_get_all() & BUS_MASK);
 
   // setup latches for databus operation
-  gpio_clr_mask(D0_7_OE);            // enable d0-d7 latch
+  // gpio_clr_mask(D0_7_OE);            // enable d0-d7 latch
   gpio_set_mask(A0_7_OE | A8_15_OE); // disable latch a0-a7 and a8-a15
 
   // do RW action
   if (rw) {
-    //   // RW_READ:
+    // RW_READ:
     if ((address >= KBD) && (address <= DSPCR)) {
 
       switch (address) {
@@ -164,9 +166,9 @@ inline __attribute__((always_inline)) void tick6502() {
         data = regKBDCR;
         break;
 
-        // default:
-        //   data = mem[address];
-        //   break;
+      default:
+        data = mem[address];
+        break;
       }
 
     } else
@@ -183,11 +185,12 @@ inline __attribute__((always_inline)) void tick6502() {
     uint32_t data = (uint8_t)gpio_get_all();
 
     if ((address >= KBD) && (address <= DSPCR)) {
-      // printf("W %x: %x\n", address, data);
 
       switch (address) {
       case DSP:
         if (regDSPCR & 0x02) {
+          if (data == '\r')
+            putchar('\n');
           putchar(data);
         } else
           regDSPDIR = data;
@@ -216,11 +219,8 @@ inline __attribute__((always_inline)) void tick6502() {
   }
 }
 
-uint32_t ticks = 0;
-
 void run6502() {
   while (1) {
     tick6502();
-    ticks++;
   }
 }

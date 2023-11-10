@@ -17,29 +17,34 @@ void core1_main() {
 
   while (true) {
     // handle keyboard input
-    if (!(regKBDCR & 0x80) && (tud_cdc_available())) {
-      regKBDCR |= 0x80; // set IRQA
-
+    if (tud_cdc_available()) {
       // read the character
-      uint32_t key = tud_cdc_read_char();
+      // uint32_t key = tud_cdc_read_char();
+      int key = getchar();
 
       // check for emulator commands
       switch (key & 0xff) {
       case 0x12: // control-R
         puts("RESET");
-        reset6502();
+        gpio_put(GP_RESET, 0);
+        sleep_ms(10);
+        gpio_put(GP_RESET, 1);
         break;
       case 0x13: // control-S
         break;
       case 0x14: // control-T
         printf("Freq:%fMhz\n", (float)ticks / (time_us_32() - start));
+        start = time_us_32();
+        ticks = 0;
         break;
 
       default:
         // pass through 6502
-
-        regKBD =
-            toupper(key) | 0x80; // apple 1 expect upper bit set on incoming
+        if (!(regKBDCR & 0x80)) {
+          regKBDCR |= 0x80; // set IRQA
+          regKBD =
+              toupper(key) | 0x80; // apple 1 expect upper bit set on incoming
+        }
         break;
       }
     }
