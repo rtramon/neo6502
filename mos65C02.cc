@@ -2,8 +2,6 @@
 
 #include "hardware/gpio.h"
 #include "pico/stdlib.h"
-#include "tusb.h"
-
 #include <stdio.h>
 
 #include "m6821.h"
@@ -23,7 +21,9 @@ uint32_t ticks;
 // mask used for the mux address/data bus: GP0-7
 constexpr uint32_t BUS_MASK = 0xFF;
 
+// external declarations
 void load_rom();
+void video_putchar(uint8_t);
 
 inline __attribute__((always_inline)) void ClockHigh() {
   gpio_set_mask(1ul << GP_CLOCK);
@@ -189,9 +189,12 @@ inline __attribute__((always_inline)) void tick6502() {
       switch (address) {
       case DSP:
         if (regDSPCR & 0x02) {
-          if (data == '\r')
-            putchar('\n');
-          putchar(data);
+          // if (data == '\r')
+          // putchar('\n');
+          // putchar(data);
+
+          // display output
+          video_putchar(data);
         } else
           regDSPDIR = data;
         break;
@@ -219,7 +222,7 @@ inline __attribute__((always_inline)) void tick6502() {
   }
 }
 
-void run6502() {
+void __not_in_flash_func(run6502)() {
   while (1) {
     tick6502();
   }
